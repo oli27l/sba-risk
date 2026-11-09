@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Data a velké soubory (licence Kaggle: nesdílet v repozitáři)
+data/*
+!data/README.md
+*.parquet
+*.joblib
+
+# Zadání a odevzdané PDF
+zadani/
+*.pdf
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
