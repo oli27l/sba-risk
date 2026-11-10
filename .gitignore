@@ -30,3 +30,7 @@ zadani/
 
 # Měření pokrytí kódu testy
 .coverage
+
+# Osobní pracovní poznámky (nesdílet)
+POZNAMKY.md
+ROADMAP.md
