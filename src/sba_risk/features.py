@@ -14,13 +14,11 @@ TARGET = "default"
 NUMERIC = [
     "log_gr_appv",      # log schválené částky (USD)
     "sba_share",        # podíl záruky SBA (0–1)
-    "term_months",      # splatnost v měsících
     "log_no_emp",       # log(1 + počet zaměstnanců)
     "create_job",       # nová pracovní místa podle žádosti
     "retained_job",     # udržená pracovní místa podle žádosti
     "new_business",     # 1 = nová firma
     "franchise",        # 1 = franšíza
-    "real_estate",      # 1 = splatnost >= 20 let (kryto nemovitostí)
     "low_doc",          # 1 = program LowDoc
     "same_state",       # 1 = banka sídlí ve stejném státě jako firma
 ]
@@ -32,7 +30,13 @@ CATEGORICAL = [
 FEATURES = NUMERIC + CATEGORICAL
 
 # Údaje známé až po schválení. Kdyby se dostaly do modelu, „věštil“ by z budoucnosti.
-LEAKAGE = ["chgoff_date", "chgoff_prin_gr", "disbursement_gross", "disbursement_date"]
+LEAKAGE = [
+    "chgoff_date", "chgoff_prin_gr", "disbursement_gross", "disbursement_date",
+    # Splatnost vypadá u odepsaných úvěrů dodatečně přepsaná: 91 % odepsaných má „nekulatou“
+    # splatnost (37, 41, 43 … měsíců), u splacených jen 15 %. Nejspíš je to doba do odepsání,
+    # ne sjednaná splatnost. Proto ji ani nic z ní odvozeného model nedostane.
+    "term_months", "real_estate", "maturity_date",
+]
 
 # Záměrně vynechané, i když jsou známé při schválení:
 # - urban_rural: v letech 1990–2000 je u 99 % úvěrů „unknown“, model by se nic nenaučil.
@@ -59,15 +63,14 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def split_by_year(
-    df: pd.DataFrame, splits: dict = SPLITS, matured_only: bool = True
+    df: pd.DataFrame, splits: dict = SPLITS, matured_only: bool = False
 ) -> dict[str, pd.DataFrame]:
     """Rozdělí úvěry podle roku schválení na train / valid / test.
 
     `matured_only`: ponechá jen úvěry, které měly podle plánu doběhnout do června 2014.
-    V datech chybí úvěry, které v roce 2014 ještě běžely. U úvěru se splatností po roce
-    2014 tedy vidíme jen ty, které skončily dřív – předčasným splacením nebo odepsáním.
-    Takový výběr závisí na výsledku a zkresluje ho. Výběr podle plánované splatnosti
-    závisí jen na údajích známých při schválení.
+    Původně zapnuté (výběr podle plánované splatnosti nezávisí na výsledku). Splatnost je
+    ale u odepsaných úvěrů zkreslená (viz LEAKAGE), takže filtr ve skutečnosti vybírá
+    víc odepsaných úvěrů. Proto je vypnutý.
     """
     year = df["approval_date"].dt.year
     if matured_only:

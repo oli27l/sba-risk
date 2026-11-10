@@ -24,3 +24,6 @@ zadani/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Uložený model patří do balíčku
+!src/sba_risk/artifacts/*.joblib

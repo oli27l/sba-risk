@@ -49,6 +49,11 @@ def test_no_leakage_in_features():
     assert TARGET not in FEATURES
 
 
+def test_term_is_not_a_feature():
+    # Splatnost je u odepsaných úvěrů zkreslená, nesmí do modelu ani nic z ní odvozeného.
+    assert {"term_months", "real_estate", "maturity_date"} <= set(LEAKAGE)
+
+
 def test_X_contains_only_features():
     X, y = X_y(add_features(loans([1995, 1996])))
     assert list(X.columns) == FEATURES
@@ -90,7 +95,8 @@ def test_split_parts_do_not_overlap():
     assert parts["train"]["approval_date"].max() < parts["test"]["approval_date"].min()
 
 
-def test_split_drops_loans_not_matured_by_2014():
+def test_split_drops_loans_not_matured_by_2014_only_when_asked():
     df = pd.concat([loans([1995], "2014-06-30"), loans([1995], "2014-07-01")], ignore_index=True)
-    assert len(split_by_year(df)["train"]) == 1
-    assert len(split_by_year(df, matured_only=False)["train"]) == 2
+    assert len(split_by_year(df, matured_only=True)["train"]) == 1
+    # Výchozí je bez filtru: splatnost je u odepsaných úvěrů zkreslená (viz LEAKAGE).
+    assert len(split_by_year(df)["train"]) == 2

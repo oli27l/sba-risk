@@ -1,0 +1,27 @@
+{
+  "model": "boosting",
+  "params": {
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 63
+  },
+  "trained_on_years": [
+    1990,
+    2003
+  ],
+  "train_default_rate": 0.08009503385225929,
+  "features": [
+    "log_gr_appv",
+    "sba_share",
+    "log_no_emp",
+    "create_job",
+    "retained_job",
+    "new_business",
+    "franchise",
+    "low_doc",
+    "same_state",
+    "sector",
+    "state",
+    "rev_line_cr"
+  ],
+  "sklearn_version": "1.9.1"
+}
