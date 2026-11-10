@@ -11,6 +11,7 @@ které ověřují balíček jako celek – tak, jak ho dostane cizí uživatel.
 | 4. reprodukovatelnost         | test_model.py, test_uncertainty.py (seed), zde: verze, instalace   |
 | 5. poctivá nejistota          | test_uncertainty.py (pokrytí na testu 70–90 %)                     |
 | 6. kód od AI je můj kód       | všechny testy + pokrytí kódu testy (pytest --cov)                  |
+| ukázka (krok 11)             | zde: notebook proběhne bez chyby                                   |
 """
 
 import json
@@ -79,3 +80,15 @@ def test_clean_install_gives_same_predictions(tmp_path):
     out = json.loads(run(str(python), "-c", script).stdout)
     assert str(ROOT) not in out["file"]  # opravdu nainstalovaná kopie, ne složka projektu
     assert out["p"] == pytest.approx(pd.read_csv(GOLDEN_PATH)["prediction"][0], abs=1e-12)
+
+
+def test_example_notebook_runs_without_errors():
+    """Ukázkový notebook (krok 11) musí jít spustit od začátku do konce bez chyby.
+    Kdyby se změnilo rozhraní balíčku a notebook ne, tenhle test to pozná."""
+    nbformat = pytest.importorskip("nbformat")
+    nbclient = pytest.importorskip("nbclient")
+    nb = nbformat.read(ROOT / "notebooks" / "example.ipynb", as_version=4)
+    nbclient.NotebookClient(nb, timeout=120, kernel_name="python3").execute()
+    errors = [o for c in nb.cells if c.cell_type == "code" for o in c.outputs
+              if o.output_type == "error"]
+    assert not errors
