@@ -7,6 +7,7 @@ from sba_risk.decision import (
     break_even_risk,
     compare,
     loss_given_default,
+    plot_profit_by_threshold,
     realized_profit,
     rules,
 )
@@ -69,3 +70,9 @@ def test_compare():
     assert np.isclose(out.loc["bez odepsaného", "proti_schvalit_vse_mil_usd"], 0.008)
     assert out.loc["bez odepsaného", "odepsano_ze_schvalenych"] == 0
     assert np.isclose(out.loc["bez odepsaného", "schvaleno"], 2 / 3)
+
+
+def test_plot_profit_by_threshold_saves_figure(tmp_path):
+    plot_profit_by_threshold(loans(), np.array([0.1, 0.2, 0.9]), margin=0.1, lgd=0.6,
+                             path=tmp_path / "p.png")
+    assert (tmp_path / "p.png").stat().st_size > 0

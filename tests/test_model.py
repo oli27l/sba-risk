@@ -8,12 +8,16 @@ import pytest
 from sba_risk.features import FEATURES, LEAKAGE
 from sba_risk.model import (
     GOLDEN_PATH,
+    GRIDS,
     MODEL_PATH,
     SectorRate,
     boosting,
     evaluate,
     golden_loans,
+    input_ranges,
     logit,
+    plot_calibration,
+    tune,
 )
 
 
@@ -100,3 +104,27 @@ def test_saved_model_gives_saved_predictions():
     model = joblib.load(MODEL_PATH)
     p = model.predict_proba(golden[FEATURES])[:, 1]
     assert np.allclose(p, golden["prediction"], rtol=0, atol=1e-12)
+
+
+def test_tune_picks_setting_with_best_validation_auc():
+    X, y = fake_data(600)
+    X_va, y_va = fake_data(600, seed=1)
+    params, results = tune("logit", X.assign(default=y), X_va.assign(default=y_va))
+    assert len(results) == len(GRIDS["logit"])
+    assert params == results.loc[results["auc"].idxmax(), "params"]
+
+
+def test_input_ranges():
+    X, _ = fake_data()
+    df = X.assign(gr_appv=np.linspace(1_000, 2_000_000, len(X)), no_emp=5, create_job=0,
+                  retained_job=np.arange(len(X)))
+    ranges = input_ranges(df)
+    low, high = ranges["numeric"]["gr_appv"]
+    assert 1_000 < low < high < 2_000_000  # percentily, ne minimum a maximum
+    assert ranges["categories"]["sector"] == ["Maloobchod", "Výroba"]
+
+
+def test_plot_calibration_saves_figure(tmp_path):
+    y = pd.Series([0, 1] * 50)
+    plot_calibration(y, {"model": np.linspace(0.1, 0.9, 100)}, tmp_path / "c.png")
+    assert (tmp_path / "c.png").stat().st_size > 0

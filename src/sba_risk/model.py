@@ -104,7 +104,7 @@ def evaluate(y: pd.Series, p: np.ndarray) -> dict:
 
 def tune(name: str, train: pd.DataFrame, valid: pd.DataFrame) -> tuple[dict, pd.DataFrame]:
     """Zkusí všechna nastavení z GRIDS na train, vybere to s nejvyšším AUC na valid.
-    AUC, protože kvůli label shiftu (6,7 % → 16,1 %) jsou pravděpodobnosti stejně posunuté."""
+    AUC, protože kvůli label shiftu (5,7 % → 13,4 %) jsou pravděpodobnosti stejně posunuté."""
     X_tr, y_tr = X_y(train)
     X_va, y_va = X_y(valid)
     rows = []

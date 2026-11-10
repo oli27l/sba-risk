@@ -10,8 +10,7 @@ dependencies = [
     "numpy>=2.5.4",
     "pandas>=3.1.1",
     "pyarrow>=26.0.1",
-    "scikit-learn>=1.9.1",
-    "streamlit>=1.67.0",
+    "scikit-learn==1.9.1",  # uložený model (pickle) funguje jen se stejnou verzí
 ]
 
 [build-system]
@@ -22,4 +21,8 @@ build-backend = "uv_build"
 dev = [
     "ipykernel>=7.4.0",
     "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
 ]
+
+[tool.pytest.ini_options]
+markers = ["slow: pomalý test (instalace balíčku do nového prostředí)"]

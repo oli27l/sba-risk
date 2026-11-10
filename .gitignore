@@ -27,3 +27,6 @@ zadani/
 
 # Uložený model patří do balíčku
 !src/sba_risk/artifacts/*.joblib
+
+# Měření pokrytí kódu testy
+.coverage

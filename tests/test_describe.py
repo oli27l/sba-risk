@@ -5,6 +5,7 @@ import pandas as pd
 from sba_risk.describe import (
     cluster_bootstrap_rate,
     default_rate_by_sector,
+    default_rate_by_year,
     matured_loans,
 )
 
@@ -76,3 +77,14 @@ def test_missing_bank_is_one_cluster():
                 ("Výroba", 2000, None, 0, "2005-01-01"),
                 ("Výroba", 2000, "A", 0, "2005-01-01")])
     assert cluster_bootstrap_rate(df, n_boot=10)["clusters"] == 2
+
+
+def test_default_rate_by_year():
+    df = loans([
+        ("Maloobchod", 2000, "A", 1, "2005-01-01"),
+        ("Výroba", 2000, "B", 0, "2005-01-01"),
+        ("Výroba", 2001, "B", 0, "2005-01-01"),
+    ])
+    table = default_rate_by_year(df)
+    assert table.loc[2000, "rate"] == 0.5
+    assert table.loc[2001, "loans"] == 1

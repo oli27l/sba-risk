@@ -17,6 +17,7 @@ from functools import lru_cache
 import joblib
 import numpy as np
 import pandas as pd
+import sklearn
 
 from sba_risk.data import SECTORS
 from sba_risk.decision import break_even_risk
@@ -57,14 +58,23 @@ class RiskWarning(UserWarning):
     spolehlivá. Výsledek se vrátí, ale uživatel by o tom měl vědět."""
 
 
+def version_note(info: dict, installed: str = sklearn.__version__) -> str | None:
+    """Uložený model (pickle) spolehlivě funguje jen se stejnou verzí scikit-learn,
+    se kterou byl uložen. Jiná verze → varování (bod 4 zadání: zaznamenané verze)."""
+    if installed != info["sklearn_version"]:
+        return (f"Model byl uložen se scikit-learn {info['sklearn_version']}, nainstalovaná je "
+                f"{installed}. Predikce se mohou lišit – nainstaluj verzi z pyproject.toml.")
+    return None
+
+
 @lru_cache
 def load_artifacts() -> tuple:
     """Načte model, informace o něm a posuny pro interval. Jen jednou (lru_cache)."""
-    return (
-        joblib.load(MODEL_PATH),
-        json.loads(INFO_PATH.read_text()),
-        json.loads(UNCERTAINTY_PATH.read_text()),
-    )
+    info = json.loads(INFO_PATH.read_text())
+    note = version_note(info)
+    if note:
+        warnings.warn(note, RiskWarning, stacklevel=2)
+    return joblib.load(MODEL_PATH), info, json.loads(UNCERTAINTY_PATH.read_text())
 
 
 def _number(loan: Mapping, key: str, minimum: float = 0) -> float:

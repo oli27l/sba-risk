@@ -16,6 +16,7 @@ from sba_risk.uncertainty import (
     fit_weighted,
     interval_shifts,
     logit,
+    plot_coverage,
     time_offsets,
 )
 
@@ -104,3 +105,10 @@ def test_saved_interval_is_sensible():
     assert s["low"] < s["shift"] < s["high"]
     # Bod 5 zadání: 80% intervaly mají na testu pokrýt zhruba 80 %.
     assert 0.7 <= s["test_coverage"] <= 0.9
+
+
+def test_plot_coverage_saves_figure(tmp_path):
+    df = fake_loans([2004, 2005], [0.2, 0.3], n=500)
+    cells = coverage(df, np.linspace(0.05, 0.5, len(df)), {"shift": 0, "low": -1, "high": 1})
+    plot_coverage(cells, tmp_path / "c.png")
+    assert (tmp_path / "c.png").stat().st_size > 0
