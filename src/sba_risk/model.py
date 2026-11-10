@@ -116,6 +116,17 @@ def tune(name: str, train: pd.DataFrame, valid: pd.DataFrame) -> tuple[dict, pd.
     return results.loc[results["auc"].idxmax(), "params"], results
 
 
+def input_ranges(df: pd.DataFrame) -> dict:
+    """Rozsahy a kategorie, které model viděl při učení. Veřejné rozhraní podle nich
+    varuje, když nový úvěr leží mimo (bod 3 zadání Part III). Rozsah = 0,5. až 99,5.
+    percentil, protože minimum a maximum jsou často chyby v datech (9 999 zaměstnanců)."""
+    numeric = ["gr_appv", "sba_share", "no_emp", "create_job", "retained_job"]
+    return {
+        "numeric": {c: df[c].quantile([0.005, 0.995]).round(4).tolist() for c in numeric},
+        "categories": {c: sorted(df[c].dropna().unique().tolist()) for c in CATEGORICAL},
+    }
+
+
 def golden_loans() -> pd.DataFrame:
     """Několik vymyšlených úvěrů, na kterých si uložíme predikce. Testy pak hlídají,
     že balíček pro ně vrací pořád stejná čísla (bod 1 zadání Part III)."""
@@ -155,6 +166,7 @@ def plot_calibration(y: pd.Series, preds: dict[str, np.ndarray], path: Path) -> 
 
 def main() -> None:
     from sba_risk.data import CLEAN_PATH
+    from sba_risk.decision import loss_given_default
     from sba_risk.features import add_features, split_by_year
 
     parts = split_by_year(add_features(pd.read_parquet(CLEAN_PATH)))
@@ -193,6 +205,8 @@ def main() -> None:
         "params": json.loads(metrics.set_index("model").loc[best, "params"]),
         "trained_on_years": [SPLITS["train"][0], SPLITS["valid"][1]],
         "train_default_rate": float(y_trva.mean()),
+        "loss_given_default": loss_given_default(train_valid),
+        "input_ranges": input_ranges(train_valid),
         "features": FEATURES,
         "sklearn_version": sklearn.__version__,
     }, indent=2, ensure_ascii=False) + "\n")
