@@ -1,0 +1,15 @@
+# Po každém pushi a pull requestu spustí GitHub na čistém Linuxu všechny testy.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4             # stáhne kód z repozitáře
+      - uses: astral-sh/setup-uv@v6           # nainstaluje uv
+      - run: uv sync --locked                 # Python 3.12 + přesně verze z uv.lock
+      - run: uv run pytest --cov=sba_risk     # všech 110 testů včetně čisté instalace

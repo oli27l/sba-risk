@@ -1,13 +1,31 @@
 # sba-risk
 
-Kalkulačka rizika odepsání úvěrů s ručením SBA (Small Business Administration).
+[![tests](https://github.com/oli27l/sba-risk/actions/workflows/tests.yml/badge.svg)](https://github.com/oli27l/sba-risk/actions/workflows/tests.yml)
+
+Odhad rizika, že úvěr s ručením SBA (Small Business Administration) skončí odepsáním,
+s 80% intervalem a doporučením schválit / zamítnout podle očekávaného zisku banky.
+Pro analytika banky, který posuzuje žádost o úvěr malé firmě.
+
 Seminární práce 4EK481/4EK666 Modelling in Data Science, Part III: Production.
 
 ## Instalace
 
+Potřebuješ Python 3.12 nebo novější.
+
+```bash
+pip install "sba-risk @ git+https://github.com/oli27l/sba-risk@v0.1.0"
+```
+
+Balíček obsahuje natrénovaný model, data z Kaggle k použití nepotřebuješ.
+Ukázka použití: [notebooks/example.ipynb](notebooks/example.ipynb).
+
+### Pro vývoj (znovu spočítat výsledky, spustit testy)
+
 Potřebuješ [uv](https://docs.astral.sh/uv/) (`brew install uv`).
 
 ```bash
+git clone https://github.com/oli27l/sba-risk.git
+cd sba-risk
 uv sync
 ```
 
